@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.779
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SallaConnector", "SallaConnector\SallaConnector.csproj", "{3853ABF8-5137-4DFB-9BFA-3EF2D5867C65}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3853ABF8-5137-4DFB-9BFA-3EF2D5867C65}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3853ABF8-5137-4DFB-9BFA-3EF2D5867C65}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3853ABF8-5137-4DFB-9BFA-3EF2D5867C65}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3853ABF8-5137-4DFB-9BFA-3EF2D5867C65}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {21AA82F0-0C8C-42B3-9265-86B2AD10065E}
+	EndGlobalSection
+EndGlobal
