@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SallaConnector.Managers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -11,7 +12,7 @@ namespace SallaConnector.Controllers
         public ActionResult Index()
         {
             ViewBag.Title = "Home Page";
-
+            SallaManager.GetOAuthToken();
             return View();
         }
     }

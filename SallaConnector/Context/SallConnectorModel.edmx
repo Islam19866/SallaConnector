@@ -1,0 +1,206 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+    <Schema Namespace="InjazSallaConnectorModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="RequestLog">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="MerchantId" Type="nvarchar" MaxLength="100" />
+          <Property Name="RequestId" Type="nvarchar" MaxLength="100" />
+          <Property Name="RequestDate" Type="datetime" />
+          <Property Name="SourceSystem" Type="nvarchar" MaxLength="100" />
+          <Property Name="DestinationSystem" Type="nvarchar" MaxLength="100" />
+          <Property Name="Payload" Type="nvarchar(max)" />
+          <Property Name="ResponseStatus" Type="nvarchar" MaxLength="50" />
+          <Property Name="ResponseDetails" Type="nvarchar(max)" />
+        </EntityType>
+        <EntityType Name="SalesOrdersMapping">
+          <Key>
+            <PropertyRef Name="MerchantId" />
+            <PropertyRef Name="SourceSalesId" />
+          </Key>
+          <Property Name="MerchantId" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="SourceSalesId" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="DestinationSalesId" Type="nvarchar" MaxLength="100" Nullable="false" />
+        </EntityType>
+        <EntityType Name="SallaAccounts">
+          <Key>
+            <PropertyRef Name="SallaMerchantId" />
+          </Key>
+          <Property Name="SallaMerchantId" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="CreatedDate" Type="datetime" />
+          <Property Name="ModifiedDate" Type="datetime" />
+          <Property Name="Email" Type="nvarchar" MaxLength="50" />
+          <Property Name="Mobile" Type="nvarchar" MaxLength="20" />
+          <Property Name="SallaStoreName" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="IsActive" Type="bit" Nullable="false" />
+          <Property Name="SallaToken" Type="nvarchar" MaxLength="500" Nullable="false" />
+          <Property Name="SallaRefreshToken" Type="nvarchar" MaxLength="500" Nullable="false" />
+          <Property Name="EdaraTenantId" Type="nvarchar" MaxLength="100" />
+          <Property Name="EdaraTenantName" Type="nvarchar" MaxLength="100" />
+          <Property Name="EdaraEmail" Type="nvarchar" MaxLength="50" />
+          <Property Name="EdaraUser" Type="nvarchar" MaxLength="50" />
+          <Property Name="EdaraToken" Type="nvarchar" MaxLength="500" />
+          <Property Name="SallaInProgressStatusId" Type="int" />
+          <Property Name="SallaShippedStatusId" Type="int" />
+          <Property Name="EdaraCODServiceId" Type="int" />
+          <Property Name="EdaraShippingServiceId" Type="int" />
+          <Property Name="EdaraWarehouseId" Type="int" />
+          <Property Name="EdaraStoreId" Type="int" />
+          <Property Name="EdaraPriceListId" Type="int" />
+          <Property Name="StockItemIncludeTax" Type="bit" />
+          <Property Name="ServiceItemIncludeTax" Type="bit" />
+        </EntityType>
+        <EntityContainer Name="InjazSallaConnectorModelStoreContainer">
+          <EntitySet Name="RequestLog" EntityType="Self.RequestLog" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="SalesOrdersMapping" EntityType="Self.SalesOrdersMapping" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="SallaAccounts" EntityType="Self.SallaAccounts" Schema="dbo" store:Type="Tables" />
+        </EntityContainer>
+      </Schema></edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="InjazSallaConnectorModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityContainer Name="InjazSallaConnectorEntities" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="SallaAccounts" EntityType="InjazSallaConnectorModel.SallaAccount" />
+          <EntitySet Name="RequestLogs" EntityType="InjazSallaConnectorModel.RequestLog" />
+          <EntitySet Name="SalesOrdersMappings" EntityType="InjazSallaConnectorModel.SalesOrdersMapping" />
+        </EntityContainer>
+        <EntityType Name="SallaAccount">
+          <Key>
+            <PropertyRef Name="SallaMerchantId" />
+          </Key>
+          <Property Name="SallaMerchantId" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="CreatedDate" Type="DateTime" Precision="3" />
+          <Property Name="ModifiedDate" Type="DateTime" Precision="3" />
+          <Property Name="Email" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Mobile" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
+          <Property Name="SallaStoreName" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="IsActive" Type="Boolean" Nullable="false" />
+          <Property Name="SallaToken" Type="String" Nullable="false" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="SallaRefreshToken" Type="String" Nullable="false" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="EdaraTenantId" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="EdaraTenantName" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="EdaraEmail" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="EdaraUser" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="EdaraToken" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="SallaInProgressStatusId" Type="Int32" />
+          <Property Name="SallaShippedStatusId" Type="Int32" />
+          <Property Name="EdaraCODServiceId" Type="Int32" />
+          <Property Name="EdaraShippingServiceId" Type="Int32" />
+          <Property Name="EdaraWarehouseId" Type="Int32" />
+          <Property Name="EdaraStoreId" Type="Int32" />
+          <Property Name="EdaraPriceListId" Type="Int32" />
+          <Property Name="StockItemIncludeTax" Type="Boolean" />
+          <Property Name="ServiceItemIncludeTax" Type="Boolean" />
+        </EntityType>
+        <EntityType Name="RequestLog">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="MerchantId" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="RequestId" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="RequestDate" Type="DateTime" Precision="3" />
+          <Property Name="SourceSystem" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="DestinationSystem" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="Payload" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="ResponseStatus" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="ResponseDetails" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+        </EntityType>
+        <EntityType Name="SalesOrdersMapping">
+          <Key>
+            <PropertyRef Name="MerchantId" />
+            <PropertyRef Name="SourceSalesId" />
+          </Key>
+          <Property Name="MerchantId" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="SourceSalesId" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="DestinationSalesId" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+        </EntityType>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="InjazSallaConnectorModelStoreContainer" CdmEntityContainer="InjazSallaConnectorEntities">
+          <EntitySetMapping Name="SallaAccounts">
+            <EntityTypeMapping TypeName="InjazSallaConnectorModel.SallaAccount">
+              <MappingFragment StoreEntitySet="SallaAccounts">
+                <ScalarProperty Name="ServiceItemIncludeTax" ColumnName="ServiceItemIncludeTax" />
+                <ScalarProperty Name="StockItemIncludeTax" ColumnName="StockItemIncludeTax" />
+                <ScalarProperty Name="EdaraPriceListId" ColumnName="EdaraPriceListId" />
+                <ScalarProperty Name="EdaraStoreId" ColumnName="EdaraStoreId" />
+                <ScalarProperty Name="EdaraWarehouseId" ColumnName="EdaraWarehouseId" />
+                <ScalarProperty Name="EdaraShippingServiceId" ColumnName="EdaraShippingServiceId" />
+                <ScalarProperty Name="EdaraCODServiceId" ColumnName="EdaraCODServiceId" />
+                <ScalarProperty Name="SallaShippedStatusId" ColumnName="SallaShippedStatusId" />
+                <ScalarProperty Name="SallaInProgressStatusId" ColumnName="SallaInProgressStatusId" />
+                <ScalarProperty Name="EdaraToken" ColumnName="EdaraToken" />
+                <ScalarProperty Name="EdaraUser" ColumnName="EdaraUser" />
+                <ScalarProperty Name="EdaraEmail" ColumnName="EdaraEmail" />
+                <ScalarProperty Name="EdaraTenantName" ColumnName="EdaraTenantName" />
+                <ScalarProperty Name="EdaraTenantId" ColumnName="EdaraTenantId" />
+                <ScalarProperty Name="SallaRefreshToken" ColumnName="SallaRefreshToken" />
+                <ScalarProperty Name="SallaToken" ColumnName="SallaToken" />
+                <ScalarProperty Name="IsActive" ColumnName="IsActive" />
+                <ScalarProperty Name="SallaStoreName" ColumnName="SallaStoreName" />
+                <ScalarProperty Name="Mobile" ColumnName="Mobile" />
+                <ScalarProperty Name="Email" ColumnName="Email" />
+                <ScalarProperty Name="ModifiedDate" ColumnName="ModifiedDate" />
+                <ScalarProperty Name="CreatedDate" ColumnName="CreatedDate" />
+                <ScalarProperty Name="SallaMerchantId" ColumnName="SallaMerchantId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="RequestLogs">
+            <EntityTypeMapping TypeName="InjazSallaConnectorModel.RequestLog">
+              <MappingFragment StoreEntitySet="RequestLog">
+                <ScalarProperty Name="ResponseDetails" ColumnName="ResponseDetails" />
+                <ScalarProperty Name="ResponseStatus" ColumnName="ResponseStatus" />
+                <ScalarProperty Name="Payload" ColumnName="Payload" />
+                <ScalarProperty Name="DestinationSystem" ColumnName="DestinationSystem" />
+                <ScalarProperty Name="SourceSystem" ColumnName="SourceSystem" />
+                <ScalarProperty Name="RequestDate" ColumnName="RequestDate" />
+                <ScalarProperty Name="RequestId" ColumnName="RequestId" />
+                <ScalarProperty Name="MerchantId" ColumnName="MerchantId" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="SalesOrdersMappings">
+            <EntityTypeMapping TypeName="InjazSallaConnectorModel.SalesOrdersMapping">
+              <MappingFragment StoreEntitySet="SalesOrdersMapping">
+                <ScalarProperty Name="DestinationSalesId" ColumnName="DestinationSalesId" />
+                <ScalarProperty Name="SourceSalesId" ColumnName="SourceSalesId" />
+                <ScalarProperty Name="MerchantId" ColumnName="MerchantId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="true" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>
