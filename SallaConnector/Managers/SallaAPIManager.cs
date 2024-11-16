@@ -111,7 +111,7 @@ namespace SallaConnector.Managers
 
             request.AddParameter("application/json", body, ParameterType.RequestBody);
             IRestResponse<T> response = client.Execute<T>(request);
-           LogManager.LogMessage( client.BaseUrl,body, response.StatusCode.ToString(),response.Content);
+          LogManager.LogMessage(client.BaseUrl,body, response.StatusCode.ToString(),response.Content);
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
                 throw new Exception("Unauthorized");
@@ -123,7 +123,7 @@ namespace SallaConnector.Managers
 
         public T Put(string url, Dictionary<string, string> headers, string body, string referenceNo, string userId)
         {
-            var baseurl = ConfigurationManager.AppSettings["IntegBaseUrl"].ToString();
+            var baseurl = ConfigurationManager.AppSettings["sallaIntegBaseUrl"].ToString();
             var client = new RestClient(url);
             var request = new RestRequest(Method.PUT);
             request.AddHeader("Authorization", "Bearer " + Token);
@@ -145,7 +145,7 @@ namespace SallaConnector.Managers
 
             IRestResponse<T> response = client.Execute<T>(request);
 
-           LogManager.LogMessage( client.BaseUrl,body, response.StatusCode.ToString(),response.Content);
+          LogManager.LogMessage( client.BaseUrl,body, response.StatusCode.ToString(),response.Content);
 
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
@@ -163,15 +163,21 @@ namespace SallaConnector.Managers
 
 
 
-        public T Get(string url, Dictionary<string, string> headers, Dictionary<string, string> parameters, string body)
+        public T Get(string url, Dictionary<string, string> headers, Dictionary<string, string> parameters, string body, string authData = "")
         {
 
-            var baseurl = ConfigurationManager.AppSettings["IntegBaseUrl"].ToString();
+            var baseurl = ConfigurationManager.AppSettings["sallaIntegBaseUrl"].ToString();
 
             var client = new RestClient(baseurl+url);
             var request = new RestRequest(Method.GET);
-          
-           request.AddHeader("Authorization", "Bearer " + Token);
+            if (string.IsNullOrEmpty(authData))
+            {
+                request.AddHeader("Authorization", "Bearer " + Token);
+            }
+            else
+            {
+                request.AddHeader("Authorization", "Bearer " + authData);
+            }
             request.AddHeader("Accept", "application/json");
             request.AddHeader("Content-Type", "application/json");
             if (headers != null)
@@ -198,12 +204,12 @@ namespace SallaConnector.Managers
 
 
             // initiate log
-           LogManager.LogMessage( client.BaseUrl,body, response.StatusCode.ToString(),response.Content);
+          // LogManager.LogMessage( client.BaseUrl,body, response.StatusCode.ToString(),response.Content);
 
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
-   
-                Get(url, headers, parameters, body);
+
+                throw new Exception("Unauthorized");
             }
            
             return response.Data;
@@ -243,7 +249,7 @@ namespace SallaConnector.Managers
             request.AddParameter("application/json", body, ParameterType.RequestBody);
             IRestResponse<T> response = client.Execute<T>(request);
 
-           LogManager.LogMessage(client.BaseUrl,body, response.StatusCode.ToString(),response.Content);
+          LogManager.LogMessage(client.BaseUrl,body, response.StatusCode.ToString(),response.Content);
 
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {

@@ -147,7 +147,7 @@ namespace SallaConnector.Managers
 
             IRestResponse<T> response = client.Execute<T>(request);
 
-                      LogManager.LogMessage(client.BaseUrl,body, response.StatusCode.ToString(),response.Content);
+                LogManager.LogMessage(client.BaseUrl,body, response.StatusCode.ToString(),response.Content);
 
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
@@ -192,7 +192,7 @@ namespace SallaConnector.Managers
                 request.AddParameter("application/json", body, ParameterType.RequestBody);
 
             IRestResponse<T> response = client.Execute<T>(request);
-                      LogManager.LogMessage(client.BaseUrl,body, response.StatusCode.ToString(),response.Content);
+                    //  LogManager.LogMessage(client.BaseUrl,body, response.StatusCode.ToString(),response.Content);
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
                 throw new  Exception("Unauthorized");
@@ -233,7 +233,7 @@ namespace SallaConnector.Managers
             request.AddParameter("application/json", body, ParameterType.RequestBody);
             IRestResponse<T> response = client.Execute<T>(request);
 
-            LogManager.LogMessage(client.BaseUrl,body, response.StatusCode.ToString(),response.Content);
+            //LogManager.LogMessage(client.BaseUrl,body, response.StatusCode.ToString(),response.Content);
 
 
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)

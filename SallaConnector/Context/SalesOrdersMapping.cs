@@ -17,5 +17,6 @@ namespace SallaConnector.Context
         public string MerchantId { get; set; }
         public string SourceSalesId { get; set; }
         public string DestinationSalesId { get; set; }
+        public string SourceInternalId { get; set; }
     }
 }

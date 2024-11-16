@@ -1,0 +1,69 @@
+﻿@model IEnumerable<SallaConnector.Context.RequestLog>
+
+@{
+    ViewBag.Title = "IntegrationLog";
+    
+}
+
+<h2>IntegrationLog</h2>
+
+
+<table class="table">
+    <tr>
+        
+        <th>
+            @Html.DisplayNameFor(model => model.RequestDate)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.SourceSystem)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.DestinationSystem)
+        </th>
+        @*<th>
+            @Html.DisplayNameFor(model => model.Payload)
+        </th>*@
+        <th>
+            @Html.DisplayNameFor(model => model.ResponseStatus)
+        </th>
+        @*<th>
+            @Html.DisplayNameFor(model => model.ResponseDetails)
+        </th>*@
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        @*<td>
+            @Html.DisplayFor(modelItem => item.MerchantId)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.RequestId)
+        </td>*@
+        <td>
+            @Html.DisplayFor(modelItem => item.RequestDate)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.SourceSystem)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.DestinationSystem)
+        </td>
+        @*<td>
+            @Html.DisplayFor(modelItem => item.Payload)
+        </td>*@
+        <td>
+            @Html.DisplayFor(modelItem => item.ResponseStatus)
+        </td>
+        @*<td>
+            @Html.DisplayFor(modelItem => item.ResponseDetails)
+        </td>*@
+        <td>
+            @*@Html.ActionLink("Edit", "Edit", new { id=item.Id }) |*@
+            @Html.ActionLink("Details", "Details", new { id=item.Id }) 
+            @*@Html.ActionLink("Delete", "Delete", new { id=item.Id })*@
+        </td>
+    </tr>
+}
+
+</table>

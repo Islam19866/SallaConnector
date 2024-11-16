@@ -12,6 +12,7 @@ namespace SallaConnector.Managers
     public class EdaraBLLManager
     {
 
+
         public static IRestResponse createCustomer(SallaCustomerDTO sallaCustomer, SallaAccount edaraAccount, CustomerAddress customerAddress =null)
         {
            
@@ -139,82 +140,7 @@ namespace SallaConnector.Managers
                 }
             }
 
-            //foreach (var item in sallaSO.items)
-            //{
-            //    int? tax_id = null;
-
-            //    if (item.amounts.tax.amount.amount > 0)
-            //        tax_id = EdaraIntegration.GetTaxId(item.amounts.tax.percent, edaraAccount);
-
-            //    if (!string.IsNullOrEmpty(item.sku))
-            //    {
-
-            //        salesOrderDetails.Add(new SalesOrderDetail
-            //        {
-
-            //            stock_item_id = EdaraIntegration.GetStockItemId(item.sku, edaraAccount),
-            //            stock_item_description = item.product.description,
-            //            quantity = item.quantity,
-            //            price = calcPrice(item.amounts.price_without_tax.amount, double.Parse(item.amounts.tax.percent)),
-            //            item_discount = item.amounts.total_discount.amount,
-            //            warehouse_id = edaraAccount.EdaraWarehouseId.Value,
-            //            comments = item.product.name,
-            //            // item_discount_type = "Value",
-
-            //            tax_id = tax_id,
-
-            //        });
-            //    }
-            //    else
-            //    {
-            //        int bundle_id = EdaraIntegration.GetBundleByName(item.name, edaraAccount);
-
-            //        // check bundle
-            //        //salesOrderDetails.Add(new SalesOrderDetail
-            //        //{
-
-            //        //    bundle_id = EdaraIntegration.GetBundleByName(item.name, edaraAccount),
-            //        //    stock_item_description = item.product.description,
-            //        //    quantity = item.quantity,
-            //        //    price = calcPrice(item.amounts.price_without_tax.amount, double.Parse(item.amounts.tax.percent)),
-            //        //    item_discount = item.amounts.total_discount.amount,
-            //        //    warehouse_id = edaraAccount.EdaraWarehouseId.Value,
-            //        //    comments = item.product.name,
-            //        //    // item_discount_type = "Value",
-
-            //        //    tax_id = tax_id,
-
-            //        //});
-
-            //        if (bundle_id != 0)
-            //        {
-            //            foreach (var bundleItem in item.consisted_products)
-            //            {
-
-            //                // add bundle itesm
-            //                salesOrderDetails.Add(new SalesOrderDetail
-            //                {
-
-            //                    bundle_id = bundle_id,
-            //                    stock_item_id = EdaraIntegration.GetStockItemId(bundleItem.sku, edaraAccount),
-            //                    stock_item_description = bundleItem.description,
-            //                    quantity = bundleItem.quantity,
-            //                    bundle_quantity=item.quantity,
-            //                    price = calcPrice(bundleItem.price.amount, double.Parse(item.amounts.tax.percent)),
-            //                    item_discount = item.amounts.total_discount.amount / item.consisted_products.Count(),
-            //                    warehouse_id = edaraAccount.EdaraWarehouseId.Value,
-            //                    comments = item.product.name,
-            //                    // item_discount_type = "Value",
-
-            //                    tax_id = tax_id,
-
-
-            //                });
-            //            }
-            //        }
-            //    }
-            //}
-
+         
             // add shipping service
             if (sallaSO.amounts.shipping_cost.amount > 0)
             {
@@ -260,8 +186,14 @@ namespace SallaConnector.Managers
             if (result.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 EdaraSOCreateResponse soResult = JsonConvert.DeserializeObject<EdaraSOCreateResponse>(result.Content);
-                LogManager.LogSalesOrderMapping(sallaEvent.merchant, sallaSO.reference_id.ToString(), soResult.result);
+                if(soResult.status_code==200)
+                    LogManager.LogSalesOrderMapping(sallaEvent.merchant, sallaSO.reference_id.ToString(), soResult.result, sallaSO.id.ToString());
+                else
+                {
+                    throw new Exception(result.Content);
+                }
             }
+
             return result;
 
         }
@@ -498,8 +430,22 @@ namespace SallaConnector.Managers
             }
         }
 
-        
 
+        public static List<RequestLog> Getlogs()
+        {
+            using (InjazSallaConnectorEntities db = new InjazSallaConnectorEntities())
+            {
+                return db.RequestLogs.ToList();
+            }
+        }
+
+        public static RequestLog GetlogDetails(int id)
+        {
+            using (InjazSallaConnectorEntities db = new InjazSallaConnectorEntities())
+            {
+                return db.RequestLogs.Find(id);
+            }
+        }
         private static BundleDetail GetBundleStockItem(List<BundleDetail> bundleDetails, string sku)
         {
             return bundleDetails.Where(b => b.stock_item_code == sku).FirstOrDefault();

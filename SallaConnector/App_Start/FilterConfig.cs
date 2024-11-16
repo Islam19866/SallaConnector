@@ -1,4 +1,5 @@
-﻿using System.Web;
+﻿using SallaConnector.Authorization;
+using System.Web;
 using System.Web.Mvc;
 
 namespace SallaConnector
@@ -8,6 +9,8 @@ namespace SallaConnector
         public static void RegisterGlobalFilters(GlobalFilterCollection filters)
         {
             filters.Add(new HandleErrorAttribute());
+          // filters.Add(new SallaAuth());
+
         }
     }
 }

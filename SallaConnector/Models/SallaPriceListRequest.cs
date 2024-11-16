@@ -18,7 +18,7 @@ namespace SallaConnector.Models
     public class SallaPrice
     {
         public string price { get; set; }
-        public string sale_price { get; set; }
+        //public string sale_price { get; set; }
     }
 
    

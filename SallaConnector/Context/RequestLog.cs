@@ -23,5 +23,7 @@ namespace SallaConnector.Context
         public string Payload { get; set; }
         public string ResponseStatus { get; set; }
         public string ResponseDetails { get; set; }
+        public string EventType { get; set; }
+        public string EventDetails { get; set; }
     }
 }

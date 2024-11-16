@@ -122,6 +122,7 @@ namespace SallaConnector.Managers
                     {
                         sallaStoreindb.SallaToken = sallaStore.access_token;
                         sallaStoreindb.SallaRefreshToken = sallaStore.refresh_token;
+                        sallaStoreindb.ModifiedDate = DateTime.Now;
                         db.SaveChanges();
                     }
                     else
@@ -131,6 +132,7 @@ namespace SallaConnector.Managers
                         sallaAccount.SallaToken = sallaStore.access_token;
                         sallaAccount.SallaRefreshToken = sallaStore.refresh_token;
                         sallaAccount.SallaStoreName = sallaStore.app_name;
+                        sallaAccount.CreatedDate = DateTime.Now;
                         db.SallaAccounts.Add(sallaAccount);
                         db.SaveChanges();
 
@@ -162,6 +164,22 @@ namespace SallaConnector.Managers
                 return null;
             }
         }
+
+        public static string geSallaInternalId(string edaraOrderNo, string merchantId)
+        {
+
+            using (InjazSallaConnectorEntities db = new InjazSallaConnectorEntities())
+            {
+                var result = db.SalesOrdersMappings.Where(a => a.DestinationSalesId == edaraOrderNo & a.MerchantId == merchantId).FirstOrDefault();
+                if (result != null)
+                {
+                    return result.SourceInternalId;
+
+                }
+                return null;
+            }
+        }
+
 
         public static int getMappedSallaStatus(string merchantId, string statusName)
         {

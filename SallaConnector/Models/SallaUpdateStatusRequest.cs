@@ -9,8 +9,8 @@ namespace SallaConnector.Models
     {
       
         public int status_id { get; set; }
-        public string slug { get; set; }
-        public string note { get; set; }
+        //public string slug { get; set; }
+        //public string note { get; set; }
          
  }
 }

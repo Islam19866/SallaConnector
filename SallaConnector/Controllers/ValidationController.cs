@@ -7,26 +7,16 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using System.Web.Mvc;
 
 namespace SallaConnector.Controllers
 {
     public class ValidationController : ApiController
     {
-        // GET api/values
-        public IEnumerable<string> Get()
-        {
-            return new string[] { "value1", "value2" };
-        }
-
-        // GET api/values/5
-        public string Get(int id)
-        {
-            return "value";
-        }
-
+         
 
         // POST api/values
-        public SettingValidationResponse Post([FromBody]dynamic value)
+        public IHttpActionResult Post([FromBody]dynamic value)
         {
             try
             {
@@ -35,7 +25,7 @@ namespace SallaConnector.Controllers
                 var result = ConfigManager.updateSallaSettings(sallaEvent);
 
                 if (result.success)
-                    return result;
+                    return Ok();
 
                 else
                 {
@@ -44,27 +34,24 @@ namespace SallaConnector.Controllers
             }
             catch (Exception ex)
             {
-                //SettingValidationResponse settingValidationResponse = new SettingValidationResponse();
-                //settingValidationResponse.status = 442;
-                //settingValidationResponse.success = false;
-                //settingValidationResponse.code = "error";
-                //settingValidationResponse.message = ex.Message;
+                SettingValidationResponse settingValidationResponse = new SettingValidationResponse();
+                settingValidationResponse.status = 442;
+                settingValidationResponse.success = false;
+                settingValidationResponse.code = "error";
+                settingValidationResponse.message = ex.Message;
+                settingValidationResponse.fields = new SallaAppSettingsDTO()
+                {
+                    WarehouseName = ex.Message
 
-                //return settingValidationResponse;
+                };
+               // return settingValidationResponse;
                 LogManager.LogMessage(ex.Message, "Exception");
+                return StatusCode((HttpStatusCode)422);
                 throw;
+
             }
 
         }
 
-            // PUT api/values/5
-            public void Put(int id, [FromBody]string value)
-        {
-        }
-
-        // DELETE api/values/5
-        public void Delete(int id)
-        {
-        }
     }
 }

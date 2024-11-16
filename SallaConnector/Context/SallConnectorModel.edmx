@@ -14,6 +14,8 @@
           <Property Name="RequestId" Type="nvarchar" MaxLength="100" />
           <Property Name="RequestDate" Type="datetime" />
           <Property Name="SourceSystem" Type="nvarchar" MaxLength="100" />
+          <Property Name="EventType" Type="nvarchar" MaxLength="100" />
+          <Property Name="EventDetails" Type="nvarchar(max)" />
           <Property Name="DestinationSystem" Type="nvarchar" MaxLength="100" />
           <Property Name="Payload" Type="nvarchar(max)" />
           <Property Name="ResponseStatus" Type="nvarchar" MaxLength="50" />
@@ -27,6 +29,7 @@
           <Property Name="MerchantId" Type="nvarchar" MaxLength="100" Nullable="false" />
           <Property Name="SourceSalesId" Type="nvarchar" MaxLength="100" Nullable="false" />
           <Property Name="DestinationSalesId" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="SourceInternalId" Type="nvarchar" MaxLength="100" />
         </EntityType>
         <EntityType Name="SallaAccounts">
           <Key>
@@ -111,6 +114,8 @@
           <Property Name="Payload" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="ResponseStatus" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="ResponseDetails" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="EventType" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="EventDetails" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityType Name="SalesOrdersMapping">
           <Key>
@@ -120,6 +125,7 @@
           <Property Name="MerchantId" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
           <Property Name="SourceSalesId" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
           <Property Name="DestinationSalesId" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="SourceInternalId" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
         </EntityType>
       </Schema>
     </edmx:ConceptualModels>
@@ -159,6 +165,8 @@
           <EntitySetMapping Name="RequestLogs">
             <EntityTypeMapping TypeName="InjazSallaConnectorModel.RequestLog">
               <MappingFragment StoreEntitySet="RequestLog">
+                <ScalarProperty Name="EventDetails" ColumnName="EventDetails" />
+                <ScalarProperty Name="EventType" ColumnName="EventType" />
                 <ScalarProperty Name="ResponseDetails" ColumnName="ResponseDetails" />
                 <ScalarProperty Name="ResponseStatus" ColumnName="ResponseStatus" />
                 <ScalarProperty Name="Payload" ColumnName="Payload" />
@@ -174,6 +182,7 @@
           <EntitySetMapping Name="SalesOrdersMappings">
             <EntityTypeMapping TypeName="InjazSallaConnectorModel.SalesOrdersMapping">
               <MappingFragment StoreEntitySet="SalesOrdersMapping">
+                <ScalarProperty Name="SourceInternalId" ColumnName="SourceInternalId" />
                 <ScalarProperty Name="DestinationSalesId" ColumnName="DestinationSalesId" />
                 <ScalarProperty Name="SourceSalesId" ColumnName="SourceSalesId" />
                 <ScalarProperty Name="MerchantId" ColumnName="MerchantId" />

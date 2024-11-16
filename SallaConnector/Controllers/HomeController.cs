@@ -12,8 +12,37 @@ namespace SallaConnector.Controllers
         public ActionResult Index()
         {
             ViewBag.Title = "Home Page";
-            SallaManager.GetOAuthToken();
+            //SallaManager.GetOAuthToken();
             return View();
         }
+
+        public ActionResult IntegrationLog()
+        {
+            ViewBag.Title = "Integration Log";
+           var logs= EdaraBLLManager.Getlogs();
+            return View(logs);
+        }
+
+        public ActionResult Details(int Id)
+        {
+            ViewBag.Title = "Integration Log details";
+            var logs = EdaraBLLManager.GetlogDetails(Id);
+            return View(logs);
+        }
+
+        public ActionResult PrivacyPolicy()
+        {
+            ViewBag.Title = "Privacy Policy";
+          
+            return View();
+        }
+        public ActionResult FAQs()
+        {
+            ViewBag.Title = "FAQs";
+            
+            return View( );
+        }
+        
+
     }
 }

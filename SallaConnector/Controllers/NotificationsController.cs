@@ -2,6 +2,7 @@
 using RestSharp;
 using SallaConnector.Managers;
 using SallaConnector.Models;
+using SallaConnector.Authorization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,103 +14,89 @@ namespace SallaConnector.Controllers
 {
     public class NotificationsController : ApiController
     {
-        // GET api/values
-        public IEnumerable<string> Get()
-        {
-            return new string[] { "value1", "value2" };
-        }
-
-        // GET api/values/5
-        public string Get(int id)
-        {
-            return "value";
-        }
-
        
         // POST api/values
-        public string Post([FromBody]dynamic value)
+       
+        
+        public IHttpActionResult Post([FromBody]dynamic value)
         {
+
+            if (Request.Headers.Contains("Authorization"))
+            {
+                var result = SallaAuth.Authorize((Request.Headers.GetValues("Authorization").FirstOrDefault()));
+                if (!result)
+                {
+                    LogManager.LogMessage(Request.Headers.GetValues("Authorization").FirstOrDefault(), "Unauthorized");
+
+                    return Unauthorized();
+                }
+            }
+            else
+            {
+                return BadRequest("Required header is missing.");
+            }
+            SallaEventDTO sallaEvent = value.ToObject<SallaEventDTO>();
+
             try
             {
 
-                SallaEventDTO sallaEvent = value.ToObject<SallaEventDTO>();
-
+                IRestResponse result = new RestResponse();
                 var edaraAccount = ConfigManager.getLinkedEdara(sallaEvent.merchant);
-
-                if (edaraAccount == null)
-                {
-                    LogManager.LogMessage(JsonConvert.SerializeObject(sallaEvent),"No edara account linked to merchant id " + sallaEvent.merchant);
-
-                    return "No edara account linked to merchant id " + sallaEvent.merchant;
-                }
+ 
                 if (sallaEvent.@event.Contains("customer.created"))
                 {
-                    LogManager.LogMessage(JsonConvert.SerializeObject(sallaEvent), "Salla Event " + sallaEvent.@event);
-
                     SallaCustomerDTO sallaCustomer = sallaEvent.data.ToObject<SallaCustomerDTO>();
-                    return  EdaraBLLManager.createCustomer(sallaCustomer, edaraAccount).Content;
+                      result=  EdaraBLLManager.createCustomer(sallaCustomer, edaraAccount);
+                 
                 }
 
                 if (sallaEvent.@event.Contains("order.created"))
                 {
-                    LogManager.LogMessage(JsonConvert.SerializeObject(sallaEvent), "Salla Event " + sallaEvent.@event);
-
-
-                    return EdaraBLLManager.createSalesOrder(sallaEvent, edaraAccount).Content;
-
+                      result = EdaraBLLManager.createSalesOrder(sallaEvent, edaraAccount);
+                   
                 }
                 if (sallaEvent.@event.Contains("order.updated"))
                 {
-                    LogManager.LogMessage(JsonConvert.SerializeObject(sallaEvent), "Salla Event " + sallaEvent.@event);
-
-
-                    return EdaraBLLManager.updateSalesOrder(sallaEvent, edaraAccount).Content;
-
+                    
+                      result = EdaraBLLManager.updateSalesOrder(sallaEvent, edaraAccount);
+                   
                 }
                 if (sallaEvent.@event.Contains("app.store.authorize"))
                 {
                     LogManager.LogMessage(JsonConvert.SerializeObject(sallaEvent), "Salla Event " + sallaEvent.@event);
 
                     if (ConfigManager.addSallaAccount(sallaEvent))
-                        return "App installed ";
+                        return Ok( "App installed ");
                     else
                     {
-                        return "App not installed ";
+                        return InternalServerError();
+                        
                     }
                 }
                 
+                
+                LogManager.LogSalaMessage(sallaEvent, result.ResponseUri.ToString(), JsonConvert.SerializeObject(result.Request), result.StatusCode.ToString(), result.Content);
+
+                if(result.StatusCode==HttpStatusCode.OK)
+                    return Ok( result.Content);
                 else
                 {
-                    LogManager.LogMessage(JsonConvert.SerializeObject(sallaEvent), "Salla Event " + sallaEvent.@event);
-
-                    return "Event not defined";
+                    throw new Exception(result.StatusDescription );
                 }
-
-                //if (sallaEvent.@event.Contains("order.created"))
-                //{
-
-                //}
+               
                 
             }
 
             catch (Exception ex)
             {
-                LogManager.LogMessage(JsonConvert.SerializeObject(ex),"exception");
+                LogManager.LogSalaMessage(sallaEvent, null,null, "exception", JsonConvert.SerializeObject(ex));
+
+               // LogManager.LogSalaMessage(JsonConvert.SerializeObject(ex),"exception");
                 //
-                return JsonConvert.SerializeObject(ex);
+                throw;
             }
 
         }
 
-       
-        // PUT api/values/5
-        public void Put(int id, [FromBody]string value)
-        {
-        }
-
-        // DELETE api/values/5
-        public void Delete(int id)
-        {
-        }
     }
 }

@@ -71,9 +71,9 @@ namespace SallaConnector.Managers
             {
                 SallaAPIManger<SallaUpdateStatusRequest> man = new SallaAPIManger<SallaUpdateStatusRequest>();
                 string body = JsonConvert.SerializeObject(sallaUpdateStatusRequest);
-                IRestResponse result = man.SendRequest("orders/:order_id/status", Method.POST, body , store.SallaToken);
-                Dictionary<string, string> parameters = new Dictionary<string, string>();
-                parameters.Add("order_id", SallaOrderId.ToString());
+                
+                IRestResponse result = man.SendRequest("orders/"+SallaOrderId.ToString()+"/status", Method.POST, body , store.SallaToken);
+              
                 if (result.StatusCode == System.Net.HttpStatusCode.OK)
                 {
                     return result;
@@ -96,15 +96,29 @@ namespace SallaConnector.Managers
             var stores = ConfigManager.getActiveStores(tenantName).Where(s=>s.EdaraPriceListId==priceListId);
             if (stores == null)
                 response = "No stores linked with pricelist " + priceListId.ToString();
-
+            int variantId = 0;
+            IRestResponse result;
             foreach (var store in stores)
             {
                 SallaPrice sallaPrice = new SallaPrice();
                 sallaPrice = sallaPriceListRequest.sallaPrice;
                 SallaAPIManger<SallaPrice> man = new SallaAPIManger<SallaPrice>();
                 string body = JsonConvert.SerializeObject(sallaPrice);
-                IRestResponse result = man.SendRequest("products/sku/"+ sallaPriceListRequest.sku +"/price", Method.POST, body, store.SallaToken);
-               
+                // Get Item Id 
+                variantId = GetVariantId(sallaPriceListRequest.sku, store);
+
+                if (variantId == 0)
+                {
+                    // update by SKU
+                      result = man.SendRequest("products/sku/" + sallaPriceListRequest.sku + "/price", Method.POST, body, store.SallaToken);
+
+                }
+                else
+                {
+                    // update by Variant Id
+                     result = man.SendRequest("products/variants/" +variantId.ToString(), Method.PUT, body, store.SallaToken);
+
+                }
                 if (result.StatusCode == System.Net.HttpStatusCode.OK | result.StatusCode == System.Net.HttpStatusCode.Created)
                 {
                     response = response + "Price updated successfully for SKU " + sallaPriceListRequest.sku;
@@ -123,19 +137,61 @@ namespace SallaConnector.Managers
         public static void UpdateStock(int qty, string SKU , string tenantName , int warehouseId)
 
         {
+            int variantId = 0;
             var stores= ConfigManager.getActiveStoresByWarehouse(tenantName,warehouseId);
             foreach (var store in stores)
             {
-                SallaUpdateQuantityRequest sallaUpdateStatusRequest = new SallaUpdateQuantityRequest() { quantity = qty, unlimited_quantity = false };
-                SallaAPIManger<SallaUpdateQuantityRequest> man = new SallaAPIManger<SallaUpdateQuantityRequest>();
-                string body = JsonConvert.SerializeObject(sallaUpdateStatusRequest);
-                IRestResponse result = man.SendRequest("products/quantities/bySku/" + SKU, Method.PUT, body, store.SallaToken);
-                // parameters.Add("sku", SKU);
-           
+                // Get Item Id 
+                 variantId= GetVariantId(SKU, store);
+
+                if (variantId == 0)
+                {
+                    // update by SKU
+                    SallaUpdateQuantityRequest sallaUpdateStatusRequest = new SallaUpdateQuantityRequest() { quantity = qty, unlimited_quantity = false };
+                    SallaAPIManger<SallaUpdateQuantityRequest> man = new SallaAPIManger<SallaUpdateQuantityRequest>();
+                    string body = JsonConvert.SerializeObject(sallaUpdateStatusRequest);
+                    IRestResponse result = man.SendRequest("products/quantities/bySku/" + SKU, Method.PUT, body, store.SallaToken);
+
+                }
+                else
+                {
+                    // upadate variant by id
+                    SallaUpdateQuantityRequest sallaUpdateStatusRequest = new SallaUpdateQuantityRequest() { quantity = qty, unlimited_quantity = false };
+                    SallaAPIManger<SallaUpdateQuantityRequest> man = new SallaAPIManger<SallaUpdateQuantityRequest>();
+                    string body = JsonConvert.SerializeObject(sallaUpdateStatusRequest);
+                    IRestResponse result = man.SendRequest("products/quantities/variant/" + variantId.ToString(), Method.PUT, body, store.SallaToken);
+
+                }
+
+
+
 
             }
 
             //return null;
+        }
+
+        public static int GetVariantId(string SKU, SallaAccount sallaEdaraAccount)
+
+        {
+            SallaAPIManger<SallaProducstList> man = new SallaAPIManger<SallaProducstList>();
+            var result = man.Get("products?keyword=" + SKU, null, null,null,sallaEdaraAccount.SallaToken);
+
+            if (result.pagination.count == 0)
+                throw new Exception("Product not exist in Salla for SKU " + SKU);
+
+            if (result.data.Where(i => i.sku == SKU).Count() > 0)
+                return 0; // Normal stock item
+
+            foreach (var item in result.data)
+            {
+                var variant = item.skus.Where(v => v.sku == SKU).FirstOrDefault();
+                if (variant != null) ;
+                return variant.id;
+            }
+            return 0;
+
+
         }
 
     }
