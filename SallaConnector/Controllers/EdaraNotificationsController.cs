@@ -42,7 +42,7 @@ namespace SallaConnector.Controllers
 
                         foreach (var item in edaraStockItem.message_attributes.StockItemBalances)
                         {
-                            SallaManager.UpdateStock(int.Parse(item.OnHandBalance.ToString()), edaraStockItem.data.sku,edaraEvent.tenant_name, item.WarehouseId);
+                            SallaManager.UpdateStock(int.Parse((item.OnHandBalance - item.Reserved_Balance).ToString()), edaraStockItem.data.sku,edaraEvent.tenant_name, item.WarehouseId);
 
                         }
 

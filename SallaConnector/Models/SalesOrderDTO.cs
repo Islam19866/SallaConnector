@@ -30,7 +30,7 @@ namespace SallaConnector.Models
         public bool taxable { get; set; }
        // public bool apply_tax_after_discount { get; set; }
         //public int tax { get; set; }
-       // public int cash_amount { get; set; }
+        public double cash_amount { get; set; }
         public int currency_id { get; set; }
         //public int exchange_rate { get; set; }
         public string channel { get; set; }
@@ -97,5 +97,11 @@ namespace SallaConnector.Models
         public string payment_type { get; set; }
     }
 
-
+    public class PaymentDTO
+    {
+        public double paid_amount { get; set; }
+        public string related_sales_order_code { get; set; }
+        public string cash_account_id { get; set; }
+        public string notes { get; set; }
+    }
 }

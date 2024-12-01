@@ -256,6 +256,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>SallConnectorModel.edmx</DependentUpon>
     </Compile>
+    <Compile Include="Controllers\ManualNotificationsController.cs" />
     <Compile Include="Controllers\ValidationController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\EdaraNotificationsController.cs" />
@@ -379,6 +380,7 @@
     <Content Include="Views\Home\PrivacyPolicy.cshtml" />
     <Content Include="Views\Home\FAQs.cshtml" />
     <Content Include="Views\Shared\_Layout - Copy.cshtml" />
+    <Content Include="Views\Home\IntegrateOrder.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

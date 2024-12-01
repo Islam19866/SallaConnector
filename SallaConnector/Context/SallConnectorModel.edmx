@@ -58,6 +58,12 @@
           <Property Name="EdaraPriceListId" Type="int" />
           <Property Name="StockItemIncludeTax" Type="bit" />
           <Property Name="ServiceItemIncludeTax" Type="bit" />
+          <Property Name="PMCredit" Type="nvarchar" MaxLength="50" />
+          <Property Name="PMCOD" Type="nvarchar" MaxLength="50" />
+          <Property Name="PMMada" Type="nvarchar" MaxLength="50" />
+          <Property Name="PMApplePay" Type="nvarchar" MaxLength="50" />
+          <Property Name="PMTamara" Type="nvarchar" MaxLength="50" />
+          <Property Name="PMTaby" Type="nvarchar" MaxLength="50" />
         </EntityType>
         <EntityContainer Name="InjazSallaConnectorModelStoreContainer">
           <EntitySet Name="RequestLog" EntityType="Self.RequestLog" Schema="dbo" store:Type="Tables" />
@@ -100,6 +106,12 @@
           <Property Name="EdaraPriceListId" Type="Int32" />
           <Property Name="StockItemIncludeTax" Type="Boolean" />
           <Property Name="ServiceItemIncludeTax" Type="Boolean" />
+          <Property Name="PMCredit" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="PMCOD" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="PMMada" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="PMApplePay" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="PMTamara" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="PMTaby" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityType Name="RequestLog">
           <Key>
@@ -136,6 +148,12 @@
           <EntitySetMapping Name="SallaAccounts">
             <EntityTypeMapping TypeName="InjazSallaConnectorModel.SallaAccount">
               <MappingFragment StoreEntitySet="SallaAccounts">
+                <ScalarProperty Name="PMTaby" ColumnName="PMTaby" />
+                <ScalarProperty Name="PMTamara" ColumnName="PMTamara" />
+                <ScalarProperty Name="PMApplePay" ColumnName="PMApplePay" />
+                <ScalarProperty Name="PMMada" ColumnName="PMMada" />
+                <ScalarProperty Name="PMCOD" ColumnName="PMCOD" />
+                <ScalarProperty Name="PMCredit" ColumnName="PMCredit" />
                 <ScalarProperty Name="ServiceItemIncludeTax" ColumnName="ServiceItemIncludeTax" />
                 <ScalarProperty Name="StockItemIncludeTax" ColumnName="StockItemIncludeTax" />
                 <ScalarProperty Name="EdaraPriceListId" ColumnName="EdaraPriceListId" />

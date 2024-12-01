@@ -26,7 +26,7 @@ namespace SallaConnector.Managers
                 db.SaveChanges();
             }
         }
-        public static void LogSalaMessage(SallaEventDTO sallaevent, string url, string request, string statusCode, string response)
+        public static void LogSalaMessage(SallaEventDTO sallaevent, string url, string request, string statusCode, string response  , string salesId ="")
         {
             using (InjazSallaConnectorEntities db = new InjazSallaConnectorEntities())
             {

@@ -11,6 +11,24 @@ namespace SallaConnector.Managers
 {
     public class EdaraIntegration
     {
+       
+        public static IRestResponse PostPayment(PaymentDTO model, SallaAccount sallaEdaraAccount)
+
+        {
+           
+            APIManger<PaymentDTO> man = new APIManger<PaymentDTO>(sallaEdaraAccount);
+            string body = JsonConvert.SerializeObject(model);
+            IRestResponse result = man.SendRequest("salesOrders/cash-in", Method.POST, body);
+
+            if (result.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+
+                return result;
+            }
+
+            return result;
+        }
+
         public static IRestResponse PostSalesOrder(SalesOrderDTO model ,SallaAccount sallaEdaraAccount)
 
         {

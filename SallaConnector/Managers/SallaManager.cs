@@ -194,5 +194,38 @@ namespace SallaConnector.Managers
 
         }
 
+        public static string GetOrderId(string OrderNo, int merchantId)
+
+        {
+            SallaAccount sallaEdaraAccount = ConfigManager.getLinkedEdara(merchantId);
+
+            SallaAPIManger<SallaSearchOrderListResult> man = new SallaAPIManger<SallaSearchOrderListResult>();
+            var result = man.Get("orders?keyword=" + OrderNo, null, null, null, sallaEdaraAccount.SallaToken);
+
+            if (result.pagination.count == 0)
+                throw new Exception("Order not exist in Salla for # " + OrderNo);
+
+
+            return result.data.FirstOrDefault().id;
+
+
+        }
+
+        public static SallaSalesOrderDTO GetOrderDetails(string OrderNo, int merchantId)
+
+        {
+            SallaAccount sallaEdaraAccount = ConfigManager.getLinkedEdara(merchantId);
+
+           string orderId= GetOrderId(OrderNo, merchantId);
+
+            SallaAPIManger<SallaSearchOrderDetailsResult> man = new SallaAPIManger<SallaSearchOrderDetailsResult>();
+            var result = man.GetResponse("orders/" + orderId, null, null, null, sallaEdaraAccount.SallaToken);
+            SallaSearchOrderDetailsResult order = JsonConvert.DeserializeObject<SallaSearchOrderDetailsResult>(result);
+
+            return order.data;
+
+
+        }
+
     }
 }

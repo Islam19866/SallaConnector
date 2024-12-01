@@ -1,69 +1,82 @@
 ﻿@model IEnumerable<SallaConnector.Context.RequestLog>
 
 @{
-    ViewBag.Title = "IntegrationLog";
-    
+    ViewBag.Title = "Event Log";
+
 }
 
 <h2>IntegrationLog</h2>
 
+@using (Html.BeginForm("IntegrationLog", "Home", FormMethod.Get))
+{
+    <input type="text" name="keyword"  id="keyWord" placeholder="Search events..." />
+    <button type="submit">Search</button>
+}
 
 <table class="table">
     <tr>
-        
+
+        <th>
+            @Html.DisplayNameFor(model => model.EventType)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.MerchantId)
+        </th>
         <th>
             @Html.DisplayNameFor(model => model.RequestDate)
         </th>
-        <th>
+        @*<th>
             @Html.DisplayNameFor(model => model.SourceSystem)
         </th>
         <th>
             @Html.DisplayNameFor(model => model.DestinationSystem)
-        </th>
+        </th>*@
         @*<th>
             @Html.DisplayNameFor(model => model.Payload)
         </th>*@
         <th>
             @Html.DisplayNameFor(model => model.ResponseStatus)
         </th>
-        @*<th>
+        <th>
             @Html.DisplayNameFor(model => model.ResponseDetails)
-        </th>*@
+        </th>
         <th></th>
     </tr>
 
-@foreach (var item in Model) {
+    @foreach (var item in Model)
+    {
     <tr>
-        @*<td>
-            @Html.DisplayFor(modelItem => item.MerchantId)
+        <td>
+            @Html.DisplayFor(modelItem => item.EventType)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.RequestId)
-        </td>*@
+            @Html.DisplayFor(modelItem => item.MerchantId)
+        </td>
+
         <td>
             @Html.DisplayFor(modelItem => item.RequestDate)
         </td>
-        <td>
+        @*<td>
             @Html.DisplayFor(modelItem => item.SourceSystem)
         </td>
         <td>
             @Html.DisplayFor(modelItem => item.DestinationSystem)
-        </td>
+        </td>*@
         @*<td>
             @Html.DisplayFor(modelItem => item.Payload)
         </td>*@
         <td>
             @Html.DisplayFor(modelItem => item.ResponseStatus)
         </td>
-        @*<td>
+        <td>
             @Html.DisplayFor(modelItem => item.ResponseDetails)
-        </td>*@
+        </td>
         <td>
             @*@Html.ActionLink("Edit", "Edit", new { id=item.Id }) |*@
-            @Html.ActionLink("Details", "Details", new { id=item.Id }) 
+            @Html.ActionLink("Details", "Details", new { id = item.Id })
             @*@Html.ActionLink("Delete", "Delete", new { id=item.Id })*@
         </td>
     </tr>
-}
+    }
 
 </table>

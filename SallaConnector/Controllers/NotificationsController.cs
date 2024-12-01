@@ -35,65 +35,75 @@ namespace SallaConnector.Controllers
             {
                 return BadRequest("Required header is missing.");
             }
+
+           
             SallaEventDTO sallaEvent = value.ToObject<SallaEventDTO>();
 
             try
             {
+                List<string> events = new List<string>() { "customer.created", "order.created", "order.updated", "app.store.authorize" };
+                if (!events.Contains(sallaEvent.@event))
+                {
+                    LogManager.LogSalaMessage(sallaEvent, null, null, "NA", null);
+                    return Ok();
+                }
+
 
                 IRestResponse result = new RestResponse();
                 var edaraAccount = ConfigManager.getLinkedEdara(sallaEvent.merchant);
- 
+                if (edaraAccount == null)
+                    return Ok("No Account linked with merchant id " + sallaEvent.merchant.ToString());
+
                 if (sallaEvent.@event.Contains("customer.created"))
                 {
                     SallaCustomerDTO sallaCustomer = sallaEvent.data.ToObject<SallaCustomerDTO>();
-                      result=  EdaraBLLManager.createCustomer(sallaCustomer, edaraAccount);
-                 
-                }
+                    result = EdaraBLLManager.createCustomer(sallaCustomer, edaraAccount);
 
+                }
                 if (sallaEvent.@event.Contains("order.created"))
                 {
-                      result = EdaraBLLManager.createSalesOrder(sallaEvent, edaraAccount);
-                   
+                    result = EdaraBLLManager.createSalesOrder(sallaEvent, edaraAccount);
+
                 }
                 if (sallaEvent.@event.Contains("order.updated"))
                 {
-                    
-                      result = EdaraBLLManager.updateSalesOrder(sallaEvent, edaraAccount);
-                   
+
+                    result = EdaraBLLManager.updateSalesOrder(sallaEvent, edaraAccount);
+
                 }
                 if (sallaEvent.@event.Contains("app.store.authorize"))
                 {
                     LogManager.LogMessage(JsonConvert.SerializeObject(sallaEvent), "Salla Event " + sallaEvent.@event);
 
                     if (ConfigManager.addSallaAccount(sallaEvent))
-                        return Ok( "App installed ");
+                        return Ok("App installed ");
                     else
                     {
                         return InternalServerError();
-                        
+
                     }
                 }
-                
-                
-                LogManager.LogSalaMessage(sallaEvent, result.ResponseUri.ToString(), JsonConvert.SerializeObject(result.Request), result.StatusCode.ToString(), result.Content);
 
-                if(result.StatusCode==HttpStatusCode.OK)
-                    return Ok( result.Content);
-                else
-                {
-                    throw new Exception(result.StatusDescription );
-                }
-               
+              
+                    LogManager.LogSalaMessage(sallaEvent, result.ResponseUri.ToString(), JsonConvert.SerializeObject(result.Request), result.StatusCode.ToString(), result.Content);
+
+                    if (result.StatusCode == HttpStatusCode.OK)
+                        return Ok(result.Content);
+                    else
+                    {
+                        throw new Exception(result.StatusDescription);
+                    }
                 
             }
 
+
             catch (Exception ex)
             {
-                LogManager.LogSalaMessage(sallaEvent, null,null, "exception", JsonConvert.SerializeObject(ex));
+                LogManager.LogSalaMessage(sallaEvent, null, null, "exception", JsonConvert.SerializeObject(ex));
 
-               // LogManager.LogSalaMessage(JsonConvert.SerializeObject(ex),"exception");
+                // LogManager.LogSalaMessage(JsonConvert.SerializeObject(ex),"exception");
                 //
-                throw;
+                return InternalServerError(ex);
             }
 
         }

@@ -37,5 +37,11 @@ namespace SallaConnector.Context
         public Nullable<int> EdaraPriceListId { get; set; }
         public Nullable<bool> StockItemIncludeTax { get; set; }
         public Nullable<bool> ServiceItemIncludeTax { get; set; }
+        public string PMCredit { get; set; }
+        public string PMCOD { get; set; }
+        public string PMMada { get; set; }
+        public string PMApplePay { get; set; }
+        public string PMTamara { get; set; }
+        public string PMTaby { get; set; }
     }
 }

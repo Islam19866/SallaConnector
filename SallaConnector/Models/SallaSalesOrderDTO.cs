@@ -6,7 +6,37 @@ using System.Web;
 
 namespace SallaConnector.Models
 {
- 
+
+
+    public class SallaSearchOrderListResult
+    {
+        public int status { get; set; }
+        public bool success { get; set; }
+        public List<OrderNunber> data { get; set; }
+        public Pagination pagination { get; set; }
+    }
+    public class OrderNunber
+    {
+        public string  id { get; set; }
+        public string reference_id { get; set; }
+    }
+
+    public class SallaSearchOrderDetailsResult2
+    {
+        public SallaSearchOrderDetailsResult data { get; set; }
+        //public bool success { get; set; }
+         public  int merchantid { get; set; }
+   
+        //  public SallaSalesOrderDTO data { get; set; }
+    }
+    public class SallaSearchOrderDetailsResult
+    {
+        public int status { get; set; }
+        public bool success { get; set; }
+       // public  int merchantid { get; set; }
+       public SallaSalesOrderDTO data { get; set; }
+      //  public SallaSalesOrderDTO data { get; set; }
+    }
     // Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(myJsonResponse);
     public class Address
     {
@@ -123,33 +153,33 @@ namespace SallaConnector.Models
         public int reference_id { get; set; }
         public Urls urls { get; set; }
         public Date date { get; set; }
-        public UpdatedAt updated_at { get; set; }
+        //public UpdatedAt updated_at { get; set; }
         public string source { get; set; }
         public bool draft { get; set; }
         public bool read { get; set; }
-        public SourceDetails source_details { get; set; }
+        //public SourceDetails source_details { get; set; }
         public Status status { get; set; }
         public bool is_price_quote { get; set; }
         public string payment_method { get; set; }
         public string receipt_image { get; set; }
         public string currency { get; set; }
         public Amounts amounts { get; set; }
-        public ExchangeRate exchange_rate { get; set; }
+        //public ExchangeRate exchange_rate { get; set; }
         public bool can_cancel { get; set; }
-        public bool show_weight { get; set; }
-        public bool can_reorder { get; set; }
+        //public bool show_weight { get; set; }
+       // public bool can_reorder { get; set; }
         public bool is_pending_payment { get; set; }
         public int pending_payment_ends_at { get; set; }
-        public string total_weight { get; set; }
-        public bool has_suspicious_alert { get; set; }
+        //public string total_weight { get; set; }
+       // public bool has_suspicious_alert { get; set; }
         public Shipping shipping { get; set; }
         public List<Shipment> shipments { get; set; }
-        public PickupBranch pickup_branch { get; set; }
-        public List<ShipmentBranch> shipment_branch { get; set; }
+        //public PickupBranch pickup_branch { get; set; }
+       // public List<ShipmentBranch> shipment_branch { get; set; }
         public SallaCustomerDTO customer { get; set; }
         public List<Item> items { get; set; }
         public Bank bank { get; set; }
-        public List<object> tags { get; set; }
+       // public List<object> tags { get; set; }
         public Store store { get; set; }
     }
 
@@ -187,7 +217,7 @@ namespace SallaConnector.Models
         public object product_sku_id { get; set; }
         public int quantity { get; set; }
         public string currency { get; set; }
-        public int weight { get; set; }
+       // public int weight { get; set; }
         public string weight_label { get; set; }
         public string weight_type { get; set; }
         public string product_type { get; set; }
@@ -381,12 +411,13 @@ namespace SallaConnector.Models
         public int branch_id { get; set; }
     }
 
+
     public class Shipment
     {
         public string id { get; set; }
         public object pickup_id { get; set; }
         public string tracking_link { get; set; }
-        public List<object> label { get; set; }
+        public object label { get; set; }
     }
 
     public class Shipment2
@@ -428,11 +459,12 @@ namespace SallaConnector.Models
         public Shipper shipper { get; set; }
         public PickupAddress pickup_address { get; set; }
         public Address address { get; set; }
-        public Shipment shipment { get; set; }
-        public List<object> policy_options { get; set; }
-        public int shipment_reference { get; set; }
-        public int branch_id { get; set; }
+       // public Shipment shipment { get; set; }
+        //public List<object> policy_options { get; set; }
+        //public int shipment_reference { get; set; }
+        //public int branch_id { get; set; }
     }
+
 
     public class ShippingCost
     {
@@ -514,7 +546,7 @@ namespace SallaConnector.Models
 
     public class Weight
     {
-        public int value { get; set; }
+        public double value { get; set; }
         public string units { get; set; }
     }
 

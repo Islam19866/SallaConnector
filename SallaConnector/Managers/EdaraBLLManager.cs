@@ -63,6 +63,161 @@ namespace SallaConnector.Managers
 
         }
 
+        public static IRestResponse createSalesOrder(SallaSalesOrderDTO sallaSO, SallaAccount edaraAccount)
+        {
+            
+            SalesOrderDTO edaraSO = new SalesOrderDTO();
+
+            edaraSO.customer_id = EdaraIntegration.GetCustomerId(sallaSO.customer.id.ToString(), edaraAccount);
+
+            if (edaraSO.customer_id == 0)
+            {
+
+                CustomerAddress customerAddress = mapCustomerAddress(edaraSO.customer_id, edaraAccount, sallaSO.shipping.address);
+                createCustomer(sallaSO.customer, edaraAccount, customerAddress);
+                edaraSO.customer_id = EdaraIntegration.GetCustomerId(sallaSO.customer.id.ToString(), edaraAccount);
+            }
+            else
+            {
+                CustomerAddress customerAddress = mapCustomerAddress(edaraSO.customer_id, edaraAccount, sallaSO.shipping.address);
+                updateCustomer(edaraSO.customer_id, sallaSO.customer, edaraAccount, customerAddress);
+            }
+            edaraSO.external_id = sallaSO.reference_id.ToString();
+            edaraSO.paper_number = sallaSO.reference_id.ToString();
+            edaraSO.currency_id = EdaraIntegration.GetCurrencyId(sallaSO.currency, edaraAccount);
+            edaraSO.taxable = true;
+            edaraSO.document_date = DateTime.Parse(sallaSO.date.date.ToString());
+            edaraSO.salesstore_id = edaraAccount.EdaraStoreId.Value;
+            edaraSO.document_type = "SO";
+            edaraSO.channel = "Injaz-" + edaraAccount.SallaMerchantId;
+            edaraSO.discount = calcDiscount(sallaSO.amounts.discounts);
+            List<SalesOrderDetail> salesOrderDetails = new List<SalesOrderDetail>();
+
+            foreach (var item in sallaSO.items)
+            {
+                int? tax_id = null;
+
+                if (item.amounts.tax.amount.amount > 0)
+                    tax_id = EdaraIntegration.GetTaxId(item.amounts.tax.percent, edaraAccount);
+
+                if (!string.IsNullOrEmpty(item.sku))
+                {
+
+                    salesOrderDetails.Add(new SalesOrderDetail
+                    {
+
+                        stock_item_id = EdaraIntegration.GetStockItemId(item.sku, edaraAccount),
+                        stock_item_description = item.product.description,
+                        quantity = item.quantity,
+                        price = calcPrice(item.amounts.price_without_tax.amount, double.Parse(item.amounts.tax.percent)),
+                        // item_discount = item.amounts.total_discount.amount,
+                        warehouse_id = edaraAccount.EdaraWarehouseId.Value,
+                        // comments = item.product.name,
+                        // item_discount_type = "Value",
+
+                        tax_id = tax_id,
+
+                    });
+                }
+                else
+                {
+                    // check bundle
+                    salesOrderDetails.Add(new SalesOrderDetail
+                    {
+
+                        bundle_id = EdaraIntegration.GetBundleByName(item.name, edaraAccount).FirstOrDefault().bundle_id,
+                        stock_item_description = item.product.description,
+                        quantity = item.quantity,
+                        price = calcPrice(item.amounts.price_without_tax.amount, double.Parse(item.amounts.tax.percent)),
+                        // item_discount = item.amounts.total_discount.amount,
+                        warehouse_id = edaraAccount.EdaraWarehouseId.Value,
+                        //  comments = item.product.name,
+                        // item_discount_type = "Value",
+
+                        tax_id = tax_id,
+
+                    });
+                }
+            }
+
+
+            // add shipping service
+            if (sallaSO.amounts.shipping_cost.amount > 0)
+            {
+                int? SO_taxid = null;
+                if (sallaSO.amounts.tax.amount.amount > 0)
+                    SO_taxid = EdaraIntegration.GetTaxId(sallaSO.amounts.tax.percent, edaraAccount);
+
+                salesOrderDetails.Add(new SalesOrderDetail
+                {
+                    service_item_id = edaraAccount.EdaraShippingServiceId.Value,
+                    quantity = 1,
+                    price = sallaSO.amounts.shipping_cost.amount + (sallaSO.amounts.shipping_cost.amount * .15),
+                    warehouse_id = edaraAccount.EdaraWarehouseId.Value,
+                    stock_item_id = null,
+                    comments = "Shipping Service",
+                    tax_id = SO_taxid
+                });
+            }
+
+            //"COD Service"
+            if (sallaSO.amounts.cash_on_delivery.amount > 0)
+            {
+                int? SO_taxid = null;
+
+                if (sallaSO.amounts.tax.amount.amount > 0)
+                    SO_taxid = EdaraIntegration.GetTaxId(sallaSO.amounts.tax.percent, edaraAccount);
+
+                salesOrderDetails.Add(new SalesOrderDetail
+                {
+                    service_item_id = edaraAccount.EdaraCODServiceId.Value,
+                    quantity = 1,
+                    price = sallaSO.amounts.cash_on_delivery.amount + (sallaSO.amounts.cash_on_delivery.amount * .15),
+                    warehouse_id = edaraAccount.EdaraWarehouseId.Value,
+                    stock_item_id = null,
+                    comments = "COD Service",
+                    tax_id = SO_taxid
+                });
+            }
+            edaraSO.salesOrder_details = salesOrderDetails;
+
+
+
+
+            var result = EdaraIntegration.PostSalesOrder(edaraSO, edaraAccount);
+
+            // LogManager.LogMessage(JsonConvert.SerializeObject(result.Content));
+            if (result.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                EdaraSOCreateResponse soResult = JsonConvert.DeserializeObject<EdaraSOCreateResponse>(result.Content);
+                if (soResult.status_code == 200)
+                {
+                    LogManager.LogSalesOrderMapping(int.Parse(edaraAccount.SallaMerchantId), sallaSO.reference_id.ToString(), soResult.result, sallaSO.id.ToString());
+                    // Payment waiting   , cod 
+                    //sallaSO.payment_method
+                    string paymentAccount = getPaymentAccount(sallaSO.payment_method, edaraAccount);
+                    if (paymentAccount != null)
+                    {
+                        PaymentDTO paymentDTO = new PaymentDTO()
+                        {
+                            cash_account_id = sallaSO.payment_method,
+                            paid_amount = sallaSO.amounts.total.amount,
+                            related_sales_order_code = soResult.result
+                        };
+                        EdaraIntegration.PostPayment(paymentDTO, edaraAccount);
+                    }
+                }
+            }
+            else
+            {
+                throw new Exception(result.Content);
+            }
+
+
+            return result;
+
+        }
+
         public static IRestResponse createSalesOrder(SallaEventDTO sallaEvent ,SallaAccount edaraAccount)
         {
             SallaSalesOrderDTO sallaSO = sallaEvent.data.ToObject<SallaSalesOrderDTO>();
@@ -86,7 +241,7 @@ namespace SallaConnector.Managers
             edaraSO.paper_number = sallaSO.reference_id.ToString();
             edaraSO.currency_id = EdaraIntegration.GetCurrencyId(sallaSO.currency, edaraAccount);
             edaraSO.taxable = true;
-            edaraSO.document_date = DateTime.Now;
+            edaraSO.document_date =DateTime .Parse(sallaSO.date.date.ToString());
             edaraSO.salesstore_id = edaraAccount.EdaraStoreId.Value;
             edaraSO.document_type = "SO";
             edaraSO.channel = "Injaz-"+sallaEvent.merchant;
@@ -112,7 +267,7 @@ namespace SallaConnector.Managers
                         price = calcPrice(item.amounts.price_without_tax.amount, double.Parse(item.amounts.tax.percent)),
                        // item_discount = item.amounts.total_discount.amount,
                         warehouse_id = edaraAccount.EdaraWarehouseId.Value,
-                        comments = item.product.name,
+                       // comments = item.product.name,
                         // item_discount_type = "Value",
 
                         tax_id = tax_id,
@@ -131,7 +286,7 @@ namespace SallaConnector.Managers
                         price = calcPrice(item.amounts.price_without_tax.amount, double.Parse(item.amounts.tax.percent)),
                        // item_discount = item.amounts.total_discount.amount,
                         warehouse_id = edaraAccount.EdaraWarehouseId.Value,
-                        comments = item.product.name,
+                      //  comments = item.product.name,
                         // item_discount_type = "Value",
 
                         tax_id = tax_id,
@@ -180,22 +335,61 @@ namespace SallaConnector.Managers
                 });
             }
             edaraSO.salesOrder_details = salesOrderDetails;
+
+
+            
+
             var result = EdaraIntegration.PostSalesOrder(edaraSO, edaraAccount);
 
             // LogManager.LogMessage(JsonConvert.SerializeObject(result.Content));
             if (result.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 EdaraSOCreateResponse soResult = JsonConvert.DeserializeObject<EdaraSOCreateResponse>(result.Content);
-                if(soResult.status_code==200)
-                    LogManager.LogSalesOrderMapping(sallaEvent.merchant, sallaSO.reference_id.ToString(), soResult.result, sallaSO.id.ToString());
-                else
+                if (soResult.status_code == 200)
                 {
-                    throw new Exception(result.Content);
+                    LogManager.LogSalesOrderMapping(sallaEvent.merchant, sallaSO.reference_id.ToString(), soResult.result, sallaSO.id.ToString());
+                    // Payment waiting   , cod 
+                    //sallaSO.payment_method
+                    string paymentAccount = getPaymentAccount(sallaSO.payment_method, edaraAccount);
+                    if (paymentAccount != null)
+                    {
+                        PaymentDTO paymentDTO = new PaymentDTO()
+                        {
+                            cash_account_id = sallaSO.payment_method,
+                            paid_amount = sallaSO.amounts.total.amount,
+                            related_sales_order_code = soResult.result
+                        };
+                        EdaraIntegration.PostPayment(paymentDTO, edaraAccount);
+                    }
                 }
             }
+            else
+            {
+                throw new Exception(result.Content);
+            }
+            
 
             return result;
 
+        }
+
+        public static string getPaymentAccount(string PaymentMethod, SallaAccount sallaEdaraAccount)
+        {
+            switch (PaymentMethod)
+            {
+                case "cod": return sallaEdaraAccount.PMCOD;
+                case "credit":
+                    return sallaEdaraAccount.PMCredit;
+                case "mada":
+                    return sallaEdaraAccount.PMMada;
+                case "taby":
+                    return sallaEdaraAccount.PMTaby;
+                case "tamara":
+                    return sallaEdaraAccount.PMTamara;
+                case "appleplay":
+                    return sallaEdaraAccount.PMApplePay;
+                default: return null;
+            }
         }
 
         private static double calcDiscount(List<DiscountDetails> discounts)
@@ -248,7 +442,7 @@ namespace SallaConnector.Managers
                 edaraSO.paper_number = sallaSO.reference_id.ToString();
                 edaraSO.currency_id = EdaraIntegration.GetCurrencyId(sallaSO.currency, edaraAccount);
                 edaraSO.taxable = true;
-                edaraSO.document_date = DateTime.Now;
+                edaraSO.document_date = DateTime.Parse(sallaSO.date.date.ToString());
                 edaraSO.salesstore_id = edaraAccount.EdaraStoreId.Value;
                 edaraSO.warehouse_id = edaraAccount.EdaraWarehouseId.Value;
                 edaraSO.document_type = "SO";
@@ -323,7 +517,7 @@ namespace SallaConnector.Managers
                             price = calcPrice(item.amounts.price_without_tax.amount, double.Parse(item.amounts.tax.percent)),
                             // item_discount = item.amounts.total_discount.amount,
                             warehouse_id = edaraAccount.EdaraWarehouseId.Value,
-                            comments = item.product.description,
+                           // comments = item.product.description,
                             // item_discount_type = "Value",
 
                             tax_id = tax_id,
@@ -369,7 +563,7 @@ namespace SallaConnector.Managers
                                     price = bundleStockItem.price,
                                     //  item_discount = item.amounts.total_discount.amount/item.consisted_products.Count(),
                                     warehouse_id = edaraAccount.EdaraWarehouseId.Value,
-                                    comments = bundleItem.name,
+                                    //comments = bundleItem.name,
                                     // item_discount_type = "Value",
 
                                     tax_id = tax_id,
@@ -424,7 +618,18 @@ namespace SallaConnector.Managers
                 }
                 edaraSO.salesOrder_details = salesOrderDetails;
                 var result = EdaraIntegration.UpdateSalesOrder(edaraSO, edaraAccount, SO_Code);
-
+                //sallaSO.payment_method
+                //string paymentAccount = getPaymentAccount(sallaSO.payment_method, edaraAccount);
+                //if (paymentAccount != null)
+                //{
+                //    PaymentDTO paymentDTO = new PaymentDTO()
+                //    {
+                //        cash_account_id = sallaSO.payment_method,
+                //        paid_amount = sallaSO.amounts.total.amount,
+                //        related_sales_order_code = result.re.result
+                //    };
+                //    EdaraIntegration.PostPayment(paymentDTO, edaraAccount);
+                //}
                 // LogManager.LogMessage(JsonConvert.SerializeObject(result.Content));
                 return result;
             }
@@ -433,9 +638,18 @@ namespace SallaConnector.Managers
 
         public static List<RequestLog> Getlogs()
         {
+
+
+            //using (InjazSallaConnectorEntities db = new InjazSallaConnectorEntities())
+            //{
+            //    return db.RequestLogs.Where(e=>e.EventDetails.Contains(keyword) | e.Payload.Contains(keyword)).ToList();
+            //}
+            DateTime specificDate = DateTime.Now.AddDays(-5);
             using (InjazSallaConnectorEntities db = new InjazSallaConnectorEntities())
             {
-                return db.RequestLogs.ToList();
+                return db.RequestLogs.Where(l=> l.EventType=="order.created" |  l.EventType == "order.updated").Where(l=> l.ResponseStatus != "OK" & l.RequestDate > specificDate).ToList();
+               
+
             }
         }
 

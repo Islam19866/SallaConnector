@@ -178,8 +178,8 @@ namespace SallaConnector.Managers
             {
                 request.AddHeader("Authorization", "Bearer " + authData);
             }
-            request.AddHeader("Accept", "application/json");
-            request.AddHeader("Content-Type", "application/json");
+           // request.AddHeader("Accept-Encoding", "gzip, deflate, br");
+            //request.AddHeader("Content-Type", "application/json");
             if (headers != null)
             {
                 foreach (var item in headers)
@@ -211,8 +211,65 @@ namespace SallaConnector.Managers
 
                 throw new Exception("Unauthorized");
             }
-           
+
+            
+
             return response.Data;
+
+        }
+
+        public string GetResponse(string url, Dictionary<string, string> headers, Dictionary<string, string> parameters, string body, string authData = "")
+        {
+
+            var baseurl = ConfigurationManager.AppSettings["sallaIntegBaseUrl"].ToString();
+
+            var client = new RestClient(baseurl + url);
+            var request = new RestRequest(Method.GET);
+            if (string.IsNullOrEmpty(authData))
+            {
+                request.AddHeader("Authorization", "Bearer " + Token);
+            }
+            else
+            {
+                request.AddHeader("Authorization", "Bearer " + authData);
+            }
+            // request.AddHeader("Accept-Encoding", "gzip, deflate, br");
+            //request.AddHeader("Content-Type", "application/json");
+            if (headers != null)
+            {
+                foreach (var item in headers)
+                {
+                    request.AddHeader(item.Key, item.Value);
+                }
+            }
+            if (parameters != null)
+            {
+                foreach (var item in parameters)
+                {
+                    request.AddParameter(item.Key, item.Value);
+                }
+            }
+
+            if (!string.IsNullOrEmpty(body))
+                request.AddParameter("application/json", body, ParameterType.RequestBody);
+
+
+
+            IRestResponse<T> response = client.Execute<T>(request);
+
+
+            // initiate log
+            // LogManager.LogMessage( client.BaseUrl,body, response.StatusCode.ToString(),response.Content);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+
+                throw new Exception("Unauthorized");
+            }
+
+
+
+            return response.Content;
 
         }
 
