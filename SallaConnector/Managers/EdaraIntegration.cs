@@ -177,16 +177,24 @@ namespace SallaConnector.Managers
         public static int GetTaxId(string rate , SallaAccount sallaEdaraAccount)
 
         {
-            
-            APIManger<EdaraTaxResponse> man = new APIManger<EdaraTaxResponse>(sallaEdaraAccount);
-            var item = man.Get("Taxes/FindByRate/"+rate, null, null, null);
-            if (item.result == null)
-                throw new Exception("Taxes ByRate " + rate + " ot exist  " );
+            if (sallaEdaraAccount.TaxRateId.HasValue)
+                return sallaEdaraAccount.TaxRateId.Value;
+            else
+            {
 
-            return item.result.FirstOrDefault().id;
+                APIManger<EdaraTaxResponse> man = new APIManger<EdaraTaxResponse>(sallaEdaraAccount);
+                var item = man.Get("Taxes/FindByRate/" + rate, null, null, null);
+                if (item.result == null)
+                    throw new Exception("Taxes ByRate " + rate + " ot exist  ");
 
+                //update TaxId
+                ConfigManager.updateTaxId(sallaEdaraAccount.SallaMerchantId, item.result.FirstOrDefault().id);
+                return item.result.FirstOrDefault().id;
+            }
 
         }
+
+        
 
         public static int GetCustomerId(string Code , SallaAccount sallaEdaraAccount)
 

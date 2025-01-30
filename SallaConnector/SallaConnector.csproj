@@ -300,6 +300,7 @@
     <Compile Include="Models\SallaEventDTO.cs" />
     <Compile Include="Models\SallaUpdateQuantityRequest.cs" />
     <Compile Include="Models\SallaUpdateStatusRequest.cs" />
+    <Compile Include="Models\SallsRefreshTokenModel.cs" />
     <Compile Include="Models\SettingValidationResponse.cs" />
     <Compile Include="Models\StockItemBalanceResponse.cs" />
     <Compile Include="Authorization\SallaAuth.cs" />
@@ -381,6 +382,7 @@
     <Content Include="Views\Home\FAQs.cshtml" />
     <Content Include="Views\Shared\_Layout - Copy.cshtml" />
     <Content Include="Views\Home\IntegrateOrder.cshtml" />
+    <Content Include="Views\Home\RefreshToken.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

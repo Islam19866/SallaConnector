@@ -227,13 +227,30 @@ namespace SallaConnector.Models
         public Amounts amounts { get; set; }
         public string notes { get; set; }
         public Product product { get; set; }
-        public List<object> options { get; set; }
+       // public List<object> options { get; set; }
+        public List<Option> options { get; set; }
         public List<object> images { get; set; }
         public List<object> codes { get; set; }
         public List<object> files { get; set; }
         public object reservations { get; set; }
         public List<object> product_reservations { get; set; }
         public List<ConsistedProduct> consisted_products { get; set; }
+    }
+
+    public class Option
+    {
+        public int id { get; set; }
+        public int product_option_id { get; set; }
+        public string name { get; set; }
+        public string type { get; set; }
+        public Value value { get; set; }
+    }
+    public class Value
+    {
+        public int id { get; set; }
+        public string name { get; set; }
+        public Price price { get; set; }
+        public string option_value { get; set; }
     }
 
     public class ConsistedProduct

@@ -134,16 +134,34 @@ namespace SallaConnector.Managers
             return response;
         }
 
-        public static void UpdateStock(int qty, string SKU , string tenantName , int warehouseId)
-
+        public static void updateTokeninDB(string SallaMerchantId, SallsRefreshTokenResponse tokenResponse)
         {
+            using (InjazSallaConnectorEntities db = new InjazSallaConnectorEntities())
+            {
+               SallaAccount sallaAccount =  db.SallaAccounts.Where(s => s.SallaMerchantId == SallaMerchantId).FirstOrDefault();
+                sallaAccount.SallaToken = tokenResponse.access_token;
+                sallaAccount.SallaRefreshToken = tokenResponse.refresh_token;
+                sallaAccount.ModifiedDate = DateTime.Now;
+                db.SaveChanges();
+            }
+        }
+        public static void UpdateStock(int qty, string SKU , string tenantName , int warehouseId)
+        {
+
             int variantId = 0;
             var stores= ConfigManager.getActiveStoresByWarehouse(tenantName,warehouseId);
             foreach (var store in stores)
             {
+
                 // Get Item Id 
                  variantId= GetVariantId(SKU, store);
 
+                if (variantId == -1)
+                {
+                    //Product not exist in Salla 
+                    //Product not exist in Salla 
+                    LogManager.LogMessage("Product not exist in Salla store  "+ store.SallaStoreName + " SKU " + SKU,"Warning");
+                }
                 if (variantId == 0)
                 {
                     // update by SKU
@@ -171,6 +189,45 @@ namespace SallaConnector.Managers
             //return null;
         }
 
+        public static SallsRefreshTokenResponse GetNewToken(SallaAccount store)
+        {
+            SallsRefreshTokenRequest sallsRefreshTokenReq = new SallsRefreshTokenRequest() { refresh_token = store.SallaRefreshToken };
+            SallaAPIManger<SallsRefreshTokenResponse> man = new SallaAPIManger<SallsRefreshTokenResponse>();
+
+            string body = JsonConvert.SerializeObject(sallsRefreshTokenReq);
+            Dictionary<string, string> parameters = new Dictionary<string, string>();
+            parameters.Add("client_id", sallsRefreshTokenReq.client_id);
+            parameters.Add("client_secret", sallsRefreshTokenReq.client_secret);
+            parameters.Add("refresh_token", sallsRefreshTokenReq.refresh_token);
+            parameters.Add("grant_type", sallsRefreshTokenReq.grant_type);
+            IRestResponse result = man.SendTokenRequest("https://accounts.salla.sa/oauth2/token",Method.POST, parameters);
+            return  JsonConvert.DeserializeObject<SallsRefreshTokenResponse>(result.Content);
+
+        }
+
+        public static void RefreshToken(int  merchantId)
+        {
+
+            var store= ConfigManager.getLinkedEdara(merchantId);
+         
+                if (store.ModifiedDate != null)
+                {
+                    TimeSpan difference = DateTime.Now.Subtract(store.ModifiedDate.Value);
+                    if (difference.Days > 7)
+                    {
+                        // update token
+                         var result=  GetNewToken(store);
+                        //update token
+                        updateTokeninDB(store.SallaMerchantId, result);
+                        }
+                     //   return result;
+                    }
+
+            }
+
+            //return null;
+        
+
         public static int GetVariantId(string SKU, SallaAccount sallaEdaraAccount)
 
         {
@@ -178,15 +235,15 @@ namespace SallaConnector.Managers
             var result = man.Get("products?keyword=" + SKU, null, null,null,sallaEdaraAccount.SallaToken);
 
             if (result.pagination.count == 0)
-                throw new Exception("Product not exist in Salla for SKU " + SKU);
+                return -1;
 
-            if (result.data.Where(i => i.sku == SKU).Count() > 0)
+            if (result.data.Where(i => i.sku.ToLower() == SKU.ToLower()).Count() > 0)
                 return 0; // Normal stock item
 
             foreach (var item in result.data)
             {
                 var variant = item.skus.Where(v => v.sku == SKU).FirstOrDefault();
-                if (variant != null) ;
+                if (variant != null) 
                 return variant.id;
             }
             return 0;

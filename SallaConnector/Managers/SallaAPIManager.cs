@@ -272,10 +272,52 @@ namespace SallaConnector.Managers
             return response.Content;
 
         }
+        public IRestResponse SendTokenRequest(string url, Method method, Dictionary<string, string> parameters = null)
+        {
+           // var baseurl = ConfigurationManager.AppSettings["sallaIntegBaseUrl"].ToString();
+            //if (url.Contains("http"))
+            //    baseurl = "";
+
+            var client = new RestClient(url);
+            var request = new RestRequest(method);
+
+ 
+
+            if (parameters != null)
+            {
+                foreach (var item in parameters)
+                {
+                    request.AddParameter(item.Key, item.Value);
+                }
+            }
+            request.AddParameter("client_id", "469a6753-af97-4af5-ab5d-59e29ead9553");
+            request.AddParameter("client_secret", "28c9fd50fdaad89a8a1c4bee061b67c8");
+            request.AddParameter("refresh_token", "ory_rt_bJEVHI528XXrWh-L7hIR5MwoAEMfkzLakyN1x5cId28.XyVVpPjIEJML25RWNvsFedD8lafupG2tFFuiRxyCcwI");
+            request.AddParameter("grant_type", "refresh_token");
+
+            request.AddHeader("Accept", "application/json");
+            request.AddHeader("Content-Type", "application/json");
+           // request.AddParameter("application/json", body, ParameterType.RequestBody);
+            IRestResponse<T> response = client.Execute<T>(request);
+
+            LogManager.LogMessage(client.BaseUrl, null, response.StatusCode.ToString(), response.Content);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+
+                throw new Exception("Unauthorized");
+            }
+
+            return response;
+
+        }
 
         public IRestResponse SendRequest(string url, Method method, string body, string authData = "", Dictionary<string, string> parameters = null)
         {
             var baseurl = ConfigurationManager.AppSettings["sallaIntegBaseUrl"].ToString();
+            if (url.Contains("http"))
+                baseurl = "";
+
             var client = new RestClient(baseurl + url);
             var request = new RestRequest(method);
 

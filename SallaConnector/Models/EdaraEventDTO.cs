@@ -15,5 +15,7 @@ namespace SallaConnector.Models
         public string tenant_id { get; set; }
         public string tenant_name { get; set; }
         public dynamic data { get; set; }
+        public dynamic message_attributes { get; set; }
+        
     }
 }

@@ -1,4 +1,5 @@
-﻿using SallaConnector.Managers;
+﻿using SallaConnector.Context;
+using SallaConnector.Managers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,18 +17,24 @@ namespace SallaConnector.Controllers
             return View();
         }
 
-        public ActionResult IntegrationLog(string keyWord = "")
+        public ActionResult IntegrationLog()
+        {
+           List<RequestLog> log = new List<RequestLog>();
+            return View(log);
+        }
+             [HttpPost]
+            public ActionResult IntegrationLog(string keyWord)
         {
             ViewBag.Title = "Integration Log";
+            ViewBag.keyWord = keyWord;
+            if (keyWord == null)
+                keyWord = DateTime.Today.ToString();
 
-            var logs = EdaraBLLManager.Getlogs();
-
-            if (string.IsNullOrEmpty(keyWord))
-                logs = logs.Where(l => l.EventDetails.Contains(keyWord)).ToList();
-                
+           var logs = EdaraBLLManager.Getlogs(keyWord);
+ 
                 return View(logs);
            
-        }
+          }
 
         public ActionResult IntegrateOrder(string errorMessage = "")
         {
@@ -42,7 +49,7 @@ namespace SallaConnector.Controllers
             try
             {
                 ViewBag.merchantId = new SelectList(ConfigManager.getActiveStores("CutePets"), "SallaMerchantId", "SallaStoreName",merchantId);
-
+               
 
                 var edaraAccount = ConfigManager.getLinkedEdara(merchantId);
           var result=  SallaManager.GetOrderDetails(orderNo, merchantId);
@@ -59,6 +66,30 @@ namespace SallaConnector.Controllers
             }
         }
 
+        public ActionResult RefreshToken(string errorMessage = "")
+        {
+            ViewBag.merchantId = new SelectList(ConfigManager.getActiveStores(), "SallaMerchantId", "SallaStoreName");
+            ViewBag.errorMessage = errorMessage;
+            return View();
+
+        }
+        [HttpPost]
+        public ActionResult RefreshToken( int merchantId)
+        {
+            try
+            {
+                ViewBag.merchantId = new SelectList(ConfigManager.getActiveStores(), "SallaMerchantId", "SallaStoreName", merchantId);
+                SallaManager.RefreshToken(merchantId);
+
+                return View();
+            }
+            catch (Exception ex)
+            {
+                ViewBag.errorMessage = ex.Message;
+                return View();
+
+            }
+        }
         public ActionResult Details(int Id)
         {
             ViewBag.Title = "Integration Log details";

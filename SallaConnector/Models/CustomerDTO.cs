@@ -39,7 +39,7 @@ namespace SallaConnector.Models
         public string name { get; set; }
         public int country_id { get; set; }
         public int city_id { get; set; }
-        public int district_id { get; set; }
+        public int? district_id { get; set; }
         public string street { get; set; }
         public string description { get; set; }
         public bool is_default { get; set; }

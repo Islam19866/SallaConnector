@@ -72,7 +72,7 @@ namespace SallaConnector.Models
 
     public class StockItemBalance
     {
-        public int StockItemId { get; set; }
+        public string StockItemId { get; set; }
         public int WarehouseId { get; set; }
         public double OnHandBalance { get; set; }
         public double Reserved_Balance { get; set; }

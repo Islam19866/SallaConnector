@@ -73,7 +73,7 @@ namespace SallaConnector.Managers
             if (edaraSO.customer_id == 0)
             {
 
-                CustomerAddress customerAddress = mapCustomerAddress(edaraSO.customer_id, edaraAccount, sallaSO.shipping.address);
+                CustomerAddress customerAddress = mapCustomerAddress(edaraSO.customer_id, edaraAccount, sallaSO.shipping != null? sallaSO.shipping.address: null);
                 createCustomer(sallaSO.customer, edaraAccount, customerAddress);
                 edaraSO.customer_id = EdaraIntegration.GetCustomerId(sallaSO.customer.id.ToString(), edaraAccount);
             }
@@ -234,14 +234,18 @@ namespace SallaConnector.Managers
             }
             else
             {
-                CustomerAddress customerAddress = mapCustomerAddress(edaraSO.customer_id,edaraAccount, sallaSO.shipping.address);
+                CustomerAddress customerAddress = new CustomerAddress();
+                if(sallaSO.shipping !=null)
+                     customerAddress = mapCustomerAddress(edaraSO.customer_id,edaraAccount, sallaSO.shipping.address);
+
                 updateCustomer(edaraSO.customer_id,sallaSO.customer, edaraAccount, customerAddress);
             }
             edaraSO.external_id = sallaSO.reference_id.ToString();
             edaraSO.paper_number = sallaSO.reference_id.ToString();
             edaraSO.currency_id = EdaraIntegration.GetCurrencyId(sallaSO.currency, edaraAccount);
             edaraSO.taxable = true;
-            edaraSO.document_date =DateTime .Parse(sallaSO.date.date.ToString());
+            edaraSO.document_date = DateTime.Now;
+                //DateTime .Parse(sallaSO.date.date.ToString());
             edaraSO.salesstore_id = edaraAccount.EdaraStoreId.Value;
             edaraSO.document_type = "SO";
             edaraSO.channel = "Injaz-"+sallaEvent.merchant;
@@ -267,7 +271,7 @@ namespace SallaConnector.Managers
                         price = calcPrice(item.amounts.price_without_tax.amount, double.Parse(item.amounts.tax.percent)),
                        // item_discount = item.amounts.total_discount.amount,
                         warehouse_id = edaraAccount.EdaraWarehouseId.Value,
-                       // comments = item.product.name,
+                        comments = getComment(item),
                         // item_discount_type = "Value",
 
                         tax_id = tax_id,
@@ -373,6 +377,26 @@ namespace SallaConnector.Managers
 
         }
 
+        private static string getComment(Item item)
+        {
+            string result="";
+            if (item.options.Count > 0)
+            {
+                result = item.name;
+
+                foreach (var option in item.options)
+                {
+                    result = result +" "+ option.name +" "+ option.value.name;
+                }
+            }
+            else
+            {
+                result =item.name;
+            }
+
+            return result;
+        }
+
         public static string getPaymentAccount(string PaymentMethod, SallaAccount sallaEdaraAccount)
         {
             switch (PaymentMethod)
@@ -442,7 +466,8 @@ namespace SallaConnector.Managers
                 edaraSO.paper_number = sallaSO.reference_id.ToString();
                 edaraSO.currency_id = EdaraIntegration.GetCurrencyId(sallaSO.currency, edaraAccount);
                 edaraSO.taxable = true;
-                edaraSO.document_date = DateTime.Parse(sallaSO.date.date.ToString());
+                edaraSO.document_date = DateTime.Now;
+                //DateTime.Parse(sallaSO.date.date.ToString());
                 edaraSO.salesstore_id = edaraAccount.EdaraStoreId.Value;
                 edaraSO.warehouse_id = edaraAccount.EdaraWarehouseId.Value;
                 edaraSO.document_type = "SO";
@@ -550,6 +575,8 @@ namespace SallaConnector.Managers
                             foreach (var bundleItem in item.consisted_products)
                             {
                                 var bundleStockItem = GetBundleStockItem(bundleDetails, bundleItem.sku);
+                                if (bundleStockItem == null)
+                                    throw new Exception("SKU  " + bundleItem.sku+ " not exist in bundle " + item.name );
                                 // add bundle itesm
                                 salesOrderDetails.Add(new SalesOrderDetail
                                 {
@@ -636,7 +663,7 @@ namespace SallaConnector.Managers
         }
 
 
-        public static List<RequestLog> Getlogs()
+        public static List<RequestLog> Getlogs(string keyWord)
         {
 
 
@@ -644,10 +671,14 @@ namespace SallaConnector.Managers
             //{
             //    return db.RequestLogs.Where(e=>e.EventDetails.Contains(keyword) | e.Payload.Contains(keyword)).ToList();
             //}
-            DateTime specificDate = DateTime.Now.AddDays(-5);
+            DateTime fromDate = DateTime.Parse(keyWord);
+            DateTime toDate = DateTime.Parse(keyWord).AddDays(+1);
             using (InjazSallaConnectorEntities db = new InjazSallaConnectorEntities())
             {
-                return db.RequestLogs.Where(l=> l.EventType=="order.created" |  l.EventType == "order.updated").Where(l=> l.ResponseStatus != "OK" & l.RequestDate > specificDate).ToList();
+                return db.RequestLogs.Where(l=> l.EventType=="order.created" 
+                |  l.EventType == "order.updated"
+                )
+                    .Where(l=> l.ResponseStatus != "OK" & l.RequestDate.Value >= fromDate & l.RequestDate.Value < toDate).ToList();
                
 
             }
@@ -669,10 +700,15 @@ namespace SallaConnector.Managers
         {
             // check customer address
             CustomerAddress customerAddress = new CustomerAddress();
-
+            if (address == null)
+                return null;
 
             if (address.country == null | address.city == null | address.block == null)
                 return null;
+
+            if (string.IsNullOrEmpty(address.block.ToString()))
+                address.block = address.city;
+           
 
            var currentAddress =  EdaraIntegration.GetCustomerAddress(customerId.ToString(),edaraAccount);
             if (currentAddress.result != null)
@@ -688,18 +724,24 @@ namespace SallaConnector.Managers
 
             }
 
-           var district = EdaraIntegration.GetDistrictName(address.block.ToString(), edaraAccount);
-            if (district.result == null)
+           var district = EdaraIntegration.GetDistrictName(address.block.ToString().TrimEnd().TrimStart(), edaraAccount);
+            if (district == null)
             {
-                EdaraIntegration.CreateDistrict(new EdaraDistrictCreateRequest() { name = address.block.ToString(), city_id = city.result.id }, edaraAccount);
-                  district = EdaraIntegration.GetDistrictName(address.block.ToString(), edaraAccount);
+                EdaraIntegration.CreateDistrict(new EdaraDistrictCreateRequest() { name = address.block.ToString().TrimEnd().TrimStart(), city_id = city.result.id }, edaraAccount);
+                  district = EdaraIntegration.GetDistrictName(address.block.ToString().TrimEnd().TrimStart(), edaraAccount);
             }
+            
 
 
             customerAddress.street = address.street_number.ToString() + " " + address.shipping_address.ToString();
-            customerAddress.city_id = city.result.id;
-            customerAddress.country_id = city.result.country_id;
-            customerAddress.district_id = district.result.id;
+
+            customerAddress.city_id =  city.result.id;
+            customerAddress.country_id =  city.result.country_id;
+            if (district != null)
+            {
+                if (district.result != null)
+                    customerAddress.district_id = district.result.id;
+            }
             customerAddress.customer_id = customerId;
             customerAddress.is_default = true;
 

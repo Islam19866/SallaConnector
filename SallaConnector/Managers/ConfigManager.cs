@@ -34,6 +34,27 @@ namespace SallaConnector.Managers
         //            return 0;
         //    }
 
+        public static void updateTaxId(string sallaMerchantId, int taxId)
+        {
+
+            try
+            {
+
+                using (InjazSallaConnectorEntities db = new InjazSallaConnectorEntities())
+                {
+                    var sallaStoreindb = db.SallaAccounts.Where(a => a.SallaMerchantId == sallaMerchantId).FirstOrDefault();
+                    if (sallaStoreindb != null)
+                    {
+                        sallaStoreindb.TaxRateId = taxId;
+                    }
+                    db.SaveChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
+        }
         public static SettingValidationResponse updateSallaSettings(SallaEventDTO sallaEvent)
         {
             SettingValidationResponse settingValidationResponse = new SettingValidationResponse();
@@ -228,6 +249,14 @@ namespace SallaConnector.Managers
             using (InjazSallaConnectorEntities db = new InjazSallaConnectorEntities())
             {
                 return db.SallaAccounts.Where(a => a.EdaraTenantName == tenantName & a.IsActive).ToList();
+            }
+        }
+
+        public static List<SallaAccount> getActiveStores()
+        {
+            using (InjazSallaConnectorEntities db = new InjazSallaConnectorEntities())
+            {
+                return db.SallaAccounts.Where(a => a.IsActive).ToList();
             }
         }
     }

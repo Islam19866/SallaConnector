@@ -49,7 +49,7 @@ namespace SallaConnector.Managers
                 db.SaveChanges();
             }
         }
-        public static void LogMessage(string url, string request, string statusCode, string response)
+        public static void LogMessage(string url, string request, string statusCode, string response ,string merchantId="")
         {
             using (InjazSallaConnectorEntities db = new InjazSallaConnectorEntities())
             {
@@ -61,6 +61,7 @@ namespace SallaConnector.Managers
                 // initiate log
                 RequestLog requestLog = new RequestLog();
                 requestLog.RequestDate = DateTime.Now;
+                requestLog.MerchantId = merchantId;
                 requestLog.DestinationSystem = url;
                 requestLog.Payload = request;
                 requestLog.ResponseStatus = statusCode.ToString();

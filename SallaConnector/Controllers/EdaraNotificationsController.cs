@@ -17,7 +17,7 @@ namespace SallaConnector.Controllers
 
        
         // POST api/values
-        [EdaraAuth]
+       // [EdaraAuth]
         public string Post([FromBody]dynamic value)
         {
             // LogManager.LogMessage(value,"Edara Event");
@@ -34,11 +34,12 @@ namespace SallaConnector.Controllers
 
                 if (edaraEvent.entity_type == "StockItem") 
                 {
-                    
+                   
 
-                    if (edaraEvent.event_type == "Balance_Increased" | edaraEvent.event_type == "Balance_Changed")
+                    if (edaraEvent.event_type == "Balance_Increased" | edaraEvent.event_type == "Balance_Changed" | edaraEvent.event_type ==  "Balance_Decreased")
                     {
                         StockItemBalanceRoot edaraStockItem = value.ToObject<StockItemBalanceRoot>();
+                 
 
                         foreach (var item in edaraStockItem.message_attributes.StockItemBalances)
                         {

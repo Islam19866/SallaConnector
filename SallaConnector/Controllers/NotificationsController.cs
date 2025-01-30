@@ -21,20 +21,20 @@ namespace SallaConnector.Controllers
         public IHttpActionResult Post([FromBody]dynamic value)
         {
 
-            if (Request.Headers.Contains("Authorization"))
-            {
-                var result = SallaAuth.Authorize((Request.Headers.GetValues("Authorization").FirstOrDefault()));
-                if (!result)
-                {
-                    LogManager.LogMessage(Request.Headers.GetValues("Authorization").FirstOrDefault(), "Unauthorized");
+            //if (Request.Headers.Contains("Authorization"))
+            //{
+            //    var result = SallaAuth.Authorize((Request.Headers.GetValues("Authorization").FirstOrDefault()));
+            //    if (!result)
+            //    {
+            //        LogManager.LogMessage(Request.Headers.GetValues("Authorization").FirstOrDefault(), "Unauthorized");
 
-                    return Unauthorized();
-                }
-            }
-            else
-            {
-                return BadRequest("Required header is missing.");
-            }
+            //        return Unauthorized();
+            //    }
+            //}
+            //else
+            //{
+            //    return BadRequest("Required header is missing.");
+            //}
 
            
             SallaEventDTO sallaEvent = value.ToObject<SallaEventDTO>();
@@ -51,8 +51,8 @@ namespace SallaConnector.Controllers
 
                 IRestResponse result = new RestResponse();
                 var edaraAccount = ConfigManager.getLinkedEdara(sallaEvent.merchant);
-                if (edaraAccount == null)
-                    return Ok("No Account linked with merchant id " + sallaEvent.merchant.ToString());
+                //if (edaraAccount == null)
+                //    return Ok("No Account linked with merchant id " + sallaEvent.merchant.ToString());
 
                 if (sallaEvent.@event.Contains("customer.created"))
                 {
@@ -62,6 +62,7 @@ namespace SallaConnector.Controllers
                 }
                 if (sallaEvent.@event.Contains("order.created"))
                 {
+                    SallaManager.RefreshToken(int.Parse(edaraAccount.SallaMerchantId));
                     result = EdaraBLLManager.createSalesOrder(sallaEvent, edaraAccount);
 
                 }
@@ -99,7 +100,7 @@ namespace SallaConnector.Controllers
 
             catch (Exception ex)
             {
-                LogManager.LogSalaMessage(sallaEvent, null, null, "exception", JsonConvert.SerializeObject(ex));
+                LogManager.LogSalaMessage(sallaEvent, null, null, "exception", JsonConvert.SerializeObject(ex.Message));
 
                 // LogManager.LogSalaMessage(JsonConvert.SerializeObject(ex),"exception");
                 //

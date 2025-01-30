@@ -43,5 +43,6 @@ namespace SallaConnector.Context
         public string PMApplePay { get; set; }
         public string PMTamara { get; set; }
         public string PMTaby { get; set; }
+        public Nullable<int> TaxRateId { get; set; }
     }
 }

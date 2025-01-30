@@ -7,9 +7,9 @@
 
 <h2>IntegrationLog</h2>
 
-@using (Html.BeginForm("IntegrationLog", "Home", FormMethod.Get))
+@using (Html.BeginForm("IntegrationLog", "Home", FormMethod.Post))
 {
-    <input type="text" name="keyword"  id="keyWord" placeholder="Search events..." />
+    <input type="date" name="keyword"  id="keyWord" placeholder="Search events..." />
     <button type="submit">Search</button>
 }
 
